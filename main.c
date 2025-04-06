@@ -2,6 +2,67 @@
 #include <stdlib.h>
 #include <locale.h>
 
+void tamanhoMatrizes(int *l1, int *c1, int *l2, int *c2) {  
+    /* 
+        a multiplicação entre matrizes só é possível se o nº de col da primeira
+        for igual ao nº de linhas da segunda
+    */
+    do { 
+        printf("\nDigite Linhas e Colunas da Primeira Matriz:\n");
+        scanf("%d %d", l1, c1);
+        printf("\nDigite Linhas e Colunas da Segunda Matriz:\n");
+        scanf("%d %d", l2, c2);
+        
+        if (*c1 != *l2) {
+            printf("Ordem das Matrizes Inválidas, tente novamente\n");
+        }
+    } while(*c1 != *l2);
+}
+
+int** alocarMemoria(int linha, int coluna) {
+    int **mat;
+    mat = (int **)calloc(linha, sizeof(int *));
+
+    for(int i = 0; i < linha; i++) {
+        mat[i] = (int *)malloc(coluna * sizeof(int));
+    }
+
+    return mat;
+}
+
+void entradaValoresMatriz(int **matriz, int linha, int coluna) {
+    for (int i = 0; i < linha; i++)
+    {
+        for (int j = 0; j < coluna; j++)
+        {
+            scanf("%d", &matriz[i][j]);
+        }
+    }
+}
+
+void mostrarMatriz(int **matriz, int linha, int coluna) {
+    for (int i = 0; i < linha; i++)
+    {
+        for (int j = 0; j < coluna; j++)
+        {
+            printf("%d ", matriz[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void zerarMatriz(int **res, int linha, int coluna) {
+    /*
+        Essa função é necessária para que, enquanto o usuário escolha a opção 1 (repetir a operação),
+        os valores da função resposta não se acumulem.
+    */
+    for (int i = 0; i < linha; i++) {
+        for (int j = 0; j < coluna; j++) {
+            res[i][j] = 0;
+        }
+    }
+}
+
 void multiplicarMatriz(int **mat1, int **mat2, int **res, int l1, int c1, int l2, int c2, int linha, int coluna, int k)
 {
     if (linha >= l1)
@@ -22,139 +83,88 @@ void multiplicarMatriz(int **mat1, int **mat2, int **res, int l1, int c1, int l2
     multiplicarMatriz(mat1, mat2, res, l1, c1, l2, c2, linha, coluna, k + 1);
 }
 
+void mostrarResultado(int **res, int linha, int coluna) {
+    for (int i = 0; i < linha; i++)
+    {
+        for (int j = 0; j < coluna; j++)
+        {
+            printf("%d\t", res[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void liberarMemoria(int **mat1, int **mat2, int **res, int l1, int l2) {
+    for (int i = 0; i < l1; i++)
+    {
+        free(mat1[i]);
+    }
+    free(mat1);
+
+    for (int i = 0; i < l2; i++)
+    {
+        free(mat2[i]);
+    }
+    free(mat2);
+
+    for (int i = 0; i < l1; i++)
+    {
+        free(res[i]);
+    }
+    free(res);
+}
+
+void repetirProcesso(int *r) {
+    do {
+        printf("\nDeseja repetir o processo? 1 = SIM / 0 = NÃO -> ");
+        scanf("%d", r);
+    } while(*r != 0 && *r != 1);
+}
+
 int main()
 {
-
     setlocale(LC_ALL, "portuguese");
 
-    while (1)
+    //interação de loop com o usuário
+    int r = 1;
+
+    do
     {
+        int **mat1, **mat2, **res, l1, c1, l2, c2;
 
-        int **mat1, **mat2, **res, i, j, l1, c1, l2, c2;
-
-        // Verifica se Multiplicação é Possível
-        do
-        {
-            // Dimensão das Matrizes
-            printf("\nDigite Linhas e Colunas da Primeira Matriz:\n");
-            scanf("%d %d", &l1, &c1);
-            printf("\nDigite Linhas e Colunas da Segunda Matriz:\n");
-            scanf("%d %d", &l2, &c2);
-            
-            if (c1 != l2)
-            {
-                printf("Ordem das Matrizes Inválidas, tente novamente\n");
-                
-            }
-            
-            
-        } while (c1 != l2);
+        tamanhoMatrizes(&l1, &c1, &l2, &c2);
         
-            
-        // Alocar Memória da Matriz 1
-        mat1 = (int **)malloc(l1 * sizeof(int *));
-        for (i = 0; i < l1; i++)
-        {
-            mat1[i] = (int *)malloc(c1 * sizeof(int));
-        }
-        // Alocar Memória da Matriz 2
-        mat2 = (int **)malloc(l2 * sizeof(int *));
-        for (i = 0; i < l2; i++)
-        {
-            mat2[i] = (int *)malloc(c2 * sizeof(int));
-        }
-        // Alocar Memória da Matriz Multiplicada
-        res = (int **)calloc(l1, sizeof(int *));
-        for (i = 0; i < l1; i++)
-        {
-            res[i] = (int *)calloc(c2, sizeof(int));
-        }
-        // Digitar Elementos da Matriz
+        mat1 = alocarMemoria(l1, c1);
+        mat2 = alocarMemoria(l2, c2);
+        res  = alocarMemoria(l1, c2);
+
         printf("\nDigite cada elemento da matriz 1: \n");
-        for (i = 0; i < l1; i++)
-        {
-            for (j = 0; j < c1; j++)
-            {
-                scanf("%d", &mat1[i][j]);
-            }
-        }
-        // Digitar Elementos da Matriz 2
+        entradaValoresMatriz(mat1, l1, c1);
+
         printf("\nDigite cada elemento da matriz 2: \n");
-        for (i = 0; i < l2; i++)
-        {
-            for (j = 0; j < c2; j++)
-            {
-                scanf("%d", &mat2[i][j]);
-            }
-        }
+        entradaValoresMatriz(mat2, l2, c2);
+
         // Print Matriz 1
         printf("\nPrimeira Matriz: \n");
-        for (i = 0; i < l1; i++)
-        {
-            for (j = 0; j < c1; j++)
-            {
-                printf("%d ", mat1[i][j]);
-            }
-            printf("\n");
-        }
+        mostrarMatriz(mat1, l1, c1);
+
         // Print Matriz 2
         printf("\nSegunda Matriz: \n");
-        for (i = 0; i < l2; i++)
-        {
-            for (j = 0; j < c2; j++)
-            {
-                printf("%d ", mat2[i][j]);
-            }
-            printf("\n");
-        }
+        mostrarMatriz(mat2, l2, c2);
 
-        //chamando a função (multiplicarMatriz())
+        //chamando a função zerar e multiplicarMatriz()
+        zerarMatriz(res, l1, c2);
         multiplicarMatriz(mat1, mat2, res, l1, c1, l2, c2, 0, 0, 0);
 
-        // Resultado da Matéria
+        // Resultado da matriz
         printf("\nMultiplicação das Duas Matrizes:\n");
-        for (i = 0; i < l1; i++)
-        {
-            for (j = 0; j < c2; j++)
-            {
-                printf("%d\t", res[i][j]);
-            }
-            printf("\n");
-        }
+        mostrarResultado(res, l1, c2);
+
         // Liberar Memória
-        for (i = 0; i < l1; i++)
-        {
-            free(mat1[i]);
-        }
-
-        free(mat1);
-        for (i = 0; i < l2; i++)
-        {
-            free(mat2[i]);
-        }
-
-        free(mat2);
-        for (i = 0; i < l1; i++)
-        {
-            free(res[i]);
-        }
-
-        free(res);
-
-        //interação de loop com o usuário
-        int r = 1;
+        liberarMemoria(mat1, mat2, res, l1, l2);
         
-        do
-        {
-            
-            printf("\nDeseja repetir o processso? 1 = SIM / 0 = NÃO -> ");
-            scanf("%d", &r);
-            if (r == 0)
-            {
-                exit(0);
-            }
-        } while (0 > r || 1 < r);
-        
-    }
+        repetirProcesso(&r);
+    } while (r == 1);
+
     return 0;
 }
